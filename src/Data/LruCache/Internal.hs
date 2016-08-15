@@ -26,9 +26,7 @@ import           Data.Traversable (Traversable)
 -- | Logical time at which an element was last accessed.
 type Priority = Int64
 
--- | LRU cache based on hashing. The times of access are stored in a
--- monotonically increasing 'Int64', when that time is at 'maxbound'
--- the cache is emptied.
+-- | LRU cache based on hashing.
 data LruCache k v = LruCache
   { lruCapacity :: !Int                         -- ^ The maximum number of elements in the queue
   , lruSize :: !Int                             -- ^ The current number of elements in the queue

@@ -21,6 +21,7 @@ module Data.LruCache
 
 import qualified Data.HashPSQ as HashPSQ
 import           Data.Hashable (Hashable)
+import           Data.List (sortOn)
 import           Data.Maybe (isNothing)
 import           Prelude hiding (lookup)
 
@@ -39,12 +40,17 @@ empty capacity
         }
 
 -- | Restore 'LruCache' invariants returning the evicted element if any.
---
--- When the logical clock reaches its maximum value and all values are
--- evicted 'Nothing' is returned.
 trim' :: (Hashable k, Ord k) => LruCache k v -> (Maybe (k, v), LruCache k v)
 trim' c
-  | lruTick c == maxBound     = (Nothing, empty (lruCapacity c))
+  | lruTick c == maxBound     =
+      -- It is not physically possible to have that many elements but
+      -- the clock could potentially get here. We then simply decrease
+      -- all priorities in O(nlogn) and start over.
+      let queue' = HashPSQ.fromList . compress . HashPSQ.toList $ lruQueue c
+      in trim' $!
+           c { lruTick = fromIntegral (lruSize c)
+             , lruQueue = queue'
+             }
   | lruSize c > lruCapacity c = 
       let Just (k, _, v) = HashPSQ.findMin (lruQueue c)
           c' = c  { lruSize  = lruSize c - 1
@@ -52,6 +58,11 @@ trim' c
                   }
       in seq c' (Just (k, v), c')
   | otherwise                 = (Nothing, c)
+
+compress :: [(k,Priority,v)] -> [(k,Priority,v)]
+compress q =
+  let sortedQ = sortOn (\(_,p,_) -> p) q
+  in zipWith (\(k,_,v) p -> (k,p,v)) sortedQ [1..]
 
 -- TODO benchmark to see if this is actually faster than snd . trim'
 -- | Restore 'LruCache' invariants. For performance reasons this is
