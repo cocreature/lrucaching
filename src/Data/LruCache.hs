@@ -21,7 +21,7 @@ module Data.LruCache
 
 import qualified Data.HashPSQ as HashPSQ
 import           Data.Hashable (Hashable)
-import           Data.List (sortOn)
+import           Data.List.Compat (sortOn)
 import           Data.Maybe (isNothing)
 import           Prelude hiding (lookup)
 
