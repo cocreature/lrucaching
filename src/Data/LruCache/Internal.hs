@@ -20,6 +20,8 @@ module Data.LruCache.Internal
 import           Control.DeepSeq (NFData,rnf)
 import           Data.Int
 import qualified Data.HashPSQ as HashPSQ
+import           Data.Foldable (Foldable)
+import           Data.Traversable (Traversable)
 
 -- | Logical time at which an element was last accessed.
 type Priority = Int64

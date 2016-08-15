@@ -36,12 +36,13 @@ test-suite lru-test
                        Data.LruCache.IOSpec
                        Data.LruCache.SpecHelper
   build-depends:       base
-                     , containers >= 0.5 && < 0.6
+                     , containers   >= 0.5 && < 0.6
                      , deepseq
                      , hashable
-                     , hspec      >= 2.2 && < 2.3
+                     , hspec        >= 2.2 && < 2.3
                      , lrucaching
-                     , QuickCheck >= 2.8 && < 2.10
+                     , QuickCheck   >= 2.8 && < 2.10
+                     , transformers >= 0.4 && < 0.6
   default-language:    Haskell2010
 
 source-repository head

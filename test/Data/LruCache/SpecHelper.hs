@@ -10,8 +10,9 @@ Maintainer  : moritz.kiefer@purelyfunctional.org
 -}
 module Data.LruCache.SpecHelper where
 
-import           Data.Hashable
+import           Control.Applicative ((<$>),(<*>))
 import           Data.Foldable (foldl')
+import           Data.Hashable
 import           Prelude hiding (lookup)
 import qualified Test.QuickCheck as QC
 
