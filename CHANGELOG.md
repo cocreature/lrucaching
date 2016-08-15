@@ -1,3 +1,9 @@
+0.3.0
+-----
+* Add `Data.LruCache.IO.Finalizer` for automatically running finalizer
+  when evicting cache entrvies.
+* Rename `newStripedHandle` to `newStripedLruHandle`
+
 0.2.1
 -----
 * Fix build with GHC 7.8

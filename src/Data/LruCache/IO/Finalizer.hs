@@ -1,25 +1,27 @@
+{-# LANGUAGE BangPatterns #-}
 {-|
-Module      : Data.LruCache.IO
+Module      : Data.LruCache.IO.Finalizer
 Copyright   : (c) Moritz Kiefer, 2016
               (c) Jasper Van der Jeugt, 2015
 License     : BSD3
 Maintainer  : moritz.kiefer@purelyfunctional.org
-Convenience module for the common case of caching results of IO actions.
-See 'Data.LruCache.IO.Finalizer' if you want to run finalizers
-automatically when cache entries are evicted
+Convenience module for the common case of caching results of IO actions 
+when finalizers have to be run when cache entries are evicted.
 -}
-module Data.LruCache.IO
+module Data.LruCache.IO.Finalizer
   ( LruHandle(..)
-  , cached
   , newLruHandle
+  , cached
   , StripedLruHandle(..)
-  , stripedCached
   , newStripedLruHandle
+  , stripedCached
   ) where
 
 import           Control.Applicative ((<$>))
+import           Data.Foldable (traverse_)
 import           Data.Hashable (Hashable, hash)
 import           Data.IORef (IORef, atomicModifyIORef', newIORef)
+import           Data.Tuple (swap)
 import           Data.Vector (Vector)
 import qualified Data.Vector as Vector
 import           Prelude hiding (lookup)
@@ -27,7 +29,7 @@ import           Prelude hiding (lookup)
 import           Data.LruCache
 
 -- | Store a LRU cache in an 'IORef to be able to conveniently update it.
-newtype LruHandle k v = LruHandle (IORef (LruCache k v))
+newtype LruHandle k v = LruHandle (IORef (LruCache k (v, v -> IO ())))
 
 -- | Create a new LRU cache of the given size.
 newLruHandle :: Int -> IO (LruHandle k v)
@@ -35,17 +37,25 @@ newLruHandle capacity = LruHandle <$> newIORef (empty capacity)
 
 -- | Return the cached result of the action or, in the case of a cache
 -- miss, execute the action and insert it in the cache.
-cached :: (Hashable k, Ord k) => LruHandle k v -> k -> IO v -> IO v
-cached (LruHandle ref) k io =
+cached ::
+  (Hashable k, Ord k) =>
+  LruHandle k v ->
+  k ->
+  IO v ->
+  (v -> IO ()) {- ^ finalizer -} ->
+  IO v
+cached (LruHandle ref) k io finalizer =
   do lookupRes <- atomicModifyIORef' ref $ \c ->
        case lookup k c of
          Nothing      -> (c,  Nothing)
          Just (v, c') -> (c', Just v)
      case lookupRes of
-       Just v  -> return v
-       Nothing ->
+       Just (!v,_)  -> return v
+       Nothing      ->
          do v <- io
-            atomicModifyIORef' ref $ \c -> (insert k v c, ())
+            evicted <- atomicModifyIORef' ref $ \c -> 
+              swap (insertView k (v,finalizer) c)
+            traverse_ (\(_,(v',finalize')) -> finalize' v') evicted
             return v
 
 -- | Using a stripe of multiple handles can improve the performance in
@@ -65,6 +75,7 @@ stripedCached ::
   StripedLruHandle k v ->
   k ->
   IO v ->
+  (v -> IO ()) {- ^ finalizer -} ->
   IO v
 stripedCached (StripedLruHandle v) k =
     cached (v Vector.! idx) k
