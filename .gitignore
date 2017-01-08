@@ -4,3 +4,4 @@
 /cabal.sandbox.config
 /.cabal-sandbox/
 /dist/
+cabal.project.local
