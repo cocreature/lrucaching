@@ -1,3 +1,9 @@
+0.3.1
+-----
+* Allow vector == 0.12.*
+* Do not use hspec-discover. This allows building the tests using
+  `cabal new-build`.
+
 0.3.0
 -----
 * Add `Data.LruCache.IO.Finalizer` for automatically running finalizer
