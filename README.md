@@ -11,3 +11,27 @@ This package has no relation to
 [lrucache](https://hackage.haskell.org/package/lrucache). I created it
 because there were bugs in `lrucache` and the maintainer was not
 responding to issues.
+
+
+## Usage
+
+The easiest way to use this library is to use `Data.LruCache.IO`. This wraps the
+cache in a `Data.IORef`, a mutable varible in the `IO` monad.
+
+e.g. To create a `1000`-item cache, keyed by `Integer`, storing `String`:
+
+```haskell
+import qualified Data.LruCache.IO as LRU
+
+newCache :: IO (LRU.LruHandle Integer String)
+newCache = LRU.newLruHandle 1000
+
+cachedLookup cache key = LRU.cached cache key $
+    -- insert some something expensive
+    return $ show key
+
+main :: IO ()
+main = do
+    cache <- newCache
+    cachedLookup cache 123 >>= putStrLn
+```
