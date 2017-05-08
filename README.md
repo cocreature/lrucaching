@@ -23,28 +23,15 @@ e.g. To create a `1000`-item cache, keyed by `Integer`, storing `String`:
 ```haskell
 import qualified Data.LruCache.IO as LRU
 
-data Cache = Cache {
-    cache1 :: LRU.LruHandle Integer String}
+newCache :: IO (LRU.LruHandle Integer String)
+newCache = LRU.newLruHandle 1000
 
-newCache :: IO Cache
-newCache = do
-    cache1_ <- LRU.newLruHandle n
-    return Cache {
-        cache1 = cache1_}
-    where
-        n = 1000
-
-cachedLookup :: Cache -> Integer -> IO (String)
-cachedLookup x id = LRU.cached (cache1 x) id $
+cachedLookup cache key = LRU.cached cache key $
     -- insert some something expensive
-    return $ show id
+    return $ show key
 
 main :: IO ()
 main = do
-    x <- newCache
-    str <-cachedLookup x 123
-    putStrLn str
+    cache <- newCache
+    cachedLookup cache 123 >>= putStrLn
 ```
-
-It's also possible to reduce this example further if you don't want to wrap the
-cache in a data or store multiple caches within a single structure.
