@@ -5,3 +5,4 @@
 /.cabal-sandbox/
 /dist/
 cabal.project.local
+.ghc.environment.*
