@@ -1,3 +1,12 @@
+0.3.3
+----
+* Drop support for GHC 7.8
+* Bump QuickCheck upper bound
+
+0.3.2
+----
+* Bump QuickCheck upper bound
+
 0.3.1
 -----
 * Allow vector == 0.12.*

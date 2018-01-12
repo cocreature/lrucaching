@@ -1,5 +1,5 @@
 name:                  lrucaching
-version:               0.3.2
+version:               0.3.3
 synopsis:              LRU cache
 description:           Please see README.md
 homepage:              https://github.com/cocreature/lrucaching#readme
@@ -13,7 +13,7 @@ build-type:            Simple
 extra-source-files:    CHANGELOG.md
                        README.md
 cabal-version:         >=1.10
-tested-with:           GHC == 7.8.4, GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.1
+tested-with:           GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2
 
 library
   hs-source-dirs:      src
@@ -21,7 +21,7 @@ library
                        Data.LruCache.IO
                        Data.LruCache.IO.Finalizer
                        Data.LruCache.Internal
-  build-depends:       base        >= 4.7  && < 5
+  build-depends:       base        >= 4.8  && < 5
                      , base-compat >= 0.9  && < 0.10
                      , deepseq     >= 1.4  && < 1.5
                      , hashable    >= 1.2  && < 1.3
@@ -43,7 +43,7 @@ test-suite lru-test
                      , hashable
                      , hspec        >= 2.2 && < 2.5
                      , lrucaching
-                     , QuickCheck   >= 2.8 && < 2.11
+                     , QuickCheck   >= 2.8 && < 2.12
                      , transformers >= 0.4 && < 0.6
   default-language:    Haskell2010
 
