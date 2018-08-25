@@ -12,7 +12,6 @@ Pure API to an LRU cache.
 -}
 module Data.LruCache
   ( LruCache
-  , Priority
   , empty
   , insert
   , insertView
