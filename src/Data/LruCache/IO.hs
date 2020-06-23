@@ -17,6 +17,8 @@ module Data.LruCache.IO
   , stripedCached
   , stripedCachedMaybe
   , newStripedLruHandle
+  , deleteViewIO
+  , stripedDeleteViewIO
   ) where
 
 import           Control.Applicative ((<$>))
@@ -67,6 +69,14 @@ cachedMaybe (LruHandle ref) k io =
                 atomicModifyIORef' ref $ \c -> (insert k v' c, ())
                 return v
 
+-- | Delete an item from the cache and return value of that item.
+deleteViewIO :: (Hashable k, Ord k) => LruHandle k v -> k -> IO (Maybe v)
+deleteViewIO (LruHandle ref) k =
+  atomicModifyIORef' ref $ \c ->
+    case deleteView k c of
+      (Nothing, c') -> (c', Nothing)
+      (Just v,  c') -> (c', Just v)
+
 -- | Using a stripe of multiple handles can improve the performance in
 -- the case of concurrent accesses since several handles can be
 -- accessed in parallel.
@@ -99,5 +109,18 @@ stripedCachedMaybe ::
   IO (Maybe v)
 stripedCachedMaybe (StripedLruHandle v) k =
     cachedMaybe (v Vector.! idx) k
+  where
+    idx = hash k `mod` Vector.length v
+
+
+      
+-- | Striped version of `deleteViewIO`
+stripedDeleteViewIO ::
+  (Hashable k, Ord k) =>
+  StripedLruHandle k v ->
+  k ->
+  IO (Maybe v)
+stripedDeleteViewIO (StripedLruHandle v) k =
+    deleteViewIO (v Vector.! idx) k
   where
     idx = hash k `mod` Vector.length v

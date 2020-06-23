@@ -89,15 +89,15 @@ insert key val c =
         }
 
 -- | Delete an element from the 'LruCache'.
-deleteView :: (Hashable k, Ord k) => k -> LruCache k v -> Maybe (v, LruCache k v)
+deleteView :: (Hashable k, Ord k) => k -> LruCache k v -> (Maybe v, LruCache k v)
 deleteView key c = 
   case HashPSQ.deleteView key (lruQueue c) of
-    Nothing                 -> Nothing
-    Just (p,mbOldVal,queue) -> Just ( mbOldVal
-                                    , c  { lruSize  = lruSize c - 1
-                                         , lruQueue = queue
-                                         }
-                                    )
+    Nothing                 -> (Nothing, c)
+    Just (p,mbOldVal,queue) -> ( Just mbOldVal
+                               , c  { lruSize  = lruSize c - 1
+                                    , lruQueue = queue
+                                    }
+                               )
 
 -- | Insert an element into the 'LruCache' returning the evicted
 -- element if any.
