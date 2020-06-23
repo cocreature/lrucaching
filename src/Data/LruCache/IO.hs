@@ -11,9 +11,11 @@ automatically when cache entries are evicted
 module Data.LruCache.IO
   ( LruHandle(..)
   , cached
+  , cachedMaybe
   , newLruHandle
   , StripedLruHandle(..)
   , stripedCached
+  , stripedCachedMaybe
   , newStripedLruHandle
   ) where
 
@@ -48,6 +50,23 @@ cached (LruHandle ref) k io =
             atomicModifyIORef' ref $ \c -> (insert k v c, ())
             return v
 
+-- | Maybe form of `cached`
+cachedMaybe :: (Hashable k, Ord k) => LruHandle k v -> k -> IO (Maybe v) -> IO (Maybe v)
+cachedMaybe (LruHandle ref) k io =
+  do lookupRes <- atomicModifyIORef' ref $ \c ->
+       case lookup k c of
+         Nothing      -> (c,  Nothing)
+         Just (v, c') -> (c', Just v)
+     case lookupRes of
+       Just v  -> return $ Just v
+       Nothing ->
+         do v <- io
+            case v of
+              Nothing -> return Nothing
+              Just v' -> do
+                atomicModifyIORef' ref $ \c -> (insert k v' c, ())
+                return v
+
 -- | Using a stripe of multiple handles can improve the performance in
 -- the case of concurrent accesses since several handles can be
 -- accessed in parallel.
@@ -68,5 +87,17 @@ stripedCached ::
   IO v
 stripedCached (StripedLruHandle v) k =
     cached (v Vector.! idx) k
+  where
+    idx = hash k `mod` Vector.length v
+
+-- | Maybe form of `stripedCached`
+stripedCachedMaybe ::
+  (Hashable k, Ord k) =>
+  StripedLruHandle k v ->
+  k ->
+  IO (Maybe v) ->
+  IO (Maybe v)
+stripedCachedMaybe (StripedLruHandle v) k =
+    cachedMaybe (v Vector.! idx) k
   where
     idx = hash k `mod` Vector.length v

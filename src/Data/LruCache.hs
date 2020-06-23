@@ -15,6 +15,7 @@ module Data.LruCache
   , empty
   , insert
   , insertView
+  , deleteView
   , lookup
   ) where
 
@@ -86,6 +87,17 @@ insert key val c =
         , lruTick  = lruTick c + 1
         , lruQueue = queue
         }
+
+-- | Delete an element from the 'LruCache'.
+deleteView :: (Hashable k, Ord k) => k -> LruCache k v -> Maybe (v, LruCache k v)
+deleteView key c = 
+  case HashPSQ.deleteView key (lruQueue c) of
+    Nothing                 -> Nothing
+    Just (p,mbOldVal,queue) -> Just ( mbOldVal
+                                    , c  { lruSize  = lruSize c - 1
+                                         , lruQueue = queue
+                                         }
+                                    )
 
 -- | Insert an element into the 'LruCache' returning the evicted
 -- element if any.
