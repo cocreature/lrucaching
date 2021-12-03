@@ -22,7 +22,7 @@ library
                        Data.LruCache.IO.Finalizer
                        Data.LruCache.Internal
   build-depends:       base        >= 4.8  && < 5
-                     , base-compat >= 0.9  && < 0.12
+                     , base-compat >= 0.9  && < 0.13
                      , deepseq     >= 1.4  && < 1.5
                      , hashable    >= 1.2  && < 1.4
                      , psqueues    >= 0.2  && < 0.3
