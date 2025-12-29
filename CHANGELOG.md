@@ -1,3 +1,7 @@
+0.3.4
+-----
+* Bump upper bounds
+
 0.3.3
 ----
 * Drop support for GHC 7.8
