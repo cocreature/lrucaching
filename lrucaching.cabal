@@ -1,5 +1,5 @@
 name:                  lrucaching
-version:               0.3.4
+version:               0.3.5
 synopsis:              LRU cache
 description:           Please see README.md
 homepage:              https://github.com/cocreature/lrucaching#readme
